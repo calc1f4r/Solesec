@@ -3,7 +3,6 @@
 import { useEffect, useRef } from "react";
 import Image from "next/image";
 
-import Link from "next/link";
 import { motion, useAnimation, useInView } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -56,7 +55,11 @@ export default function Home() {
     <div className="min-h-screen bg-black text-white">
       <header className="fixed top-0 left-0 right-0 z-50 bg-black/80 backdrop-blur-sm border-b border-[#14f195]/10">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <Link href="/" className="flex items-center space-x-2">
+          <ScrollLink
+            to="home"
+            smooth={true}
+            duration={500}
+            className="flex items-center space-x-2 cursor-pointer">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 24 24"
@@ -69,7 +72,7 @@ export default function Home() {
               <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
             </svg>
             <span className="text-xl font-bold">SOLSEC</span>
-          </Link>
+          </ScrollLink>
           <nav className="hidden md:flex space-x-6">
             <ScrollLink
               to="home"
@@ -114,12 +117,18 @@ export default function Home() {
               <FileSearch className="w-4 h-4 mr-2" />
               Request Audit
             </Button>
-            <Button
-              variant="outline"
-              className="border-[#9945ff] text-white bg-[#9945ff]/20 hover:bg-[#9945ff] hover:text-black transition-colors">
-              <Bot className="w-4 h-4 mr-2" />
-              Chat with Code
-            </Button>
+            <ScrollLink
+              to="chatbot"
+              smooth={true}
+              duration={500}
+              className="cursor-pointer">
+              <Button
+                variant="outline"
+                className="border-[#9945ff] text-white bg-[#9945ff]/20 hover:bg-[#9945ff] hover:text-black transition-colors">
+                <Bot className="w-4 h-4 mr-2" />
+                Chat with Code
+              </Button>
+            </ScrollLink>
           </div>
           <Button variant="ghost" className="md:hidden">
             <svg
@@ -679,7 +688,11 @@ export default function Home() {
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div>
-              <Link href="/" className="flex items-center space-x-2 mb-4">
+              <ScrollLink
+                to="home"
+                smooth={true}
+                duration={500}
+                className="flex items-center space-x-2 mb-4 cursor-pointer">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   viewBox="0 0 24 24"
@@ -692,7 +705,7 @@ export default function Home() {
                   <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
                 </svg>
                 <span className="text-xl font-bold text-white">sol7audit</span>
-              </Link>
+              </ScrollLink>
               <p className="text-sm">
                 AI-Powered Solana Smart Contract Auditing
               </p>
@@ -701,39 +714,49 @@ export default function Home() {
               <h3 className="text-white font-semibold mb-4">Quick Links</h3>
               <ul className="space-y-2">
                 <li>
-                  <Link
-                    href="#"
-                    className="hover:text-[#14f195] transition-colors">
+                  <ScrollLink
+                    to="home"
+                    smooth={true}
+                    duration={500}
+                    className="cursor-pointer hover:text-[#14f195] transition-colors">
                     Home
-                  </Link>
+                  </ScrollLink>
                 </li>
                 <li>
-                  <Link
-                    href="#"
-                    className="hover:text-[#14f195] transition-colors">
+                  <ScrollLink
+                    to="about"
+                    smooth={true}
+                    duration={500}
+                    className="cursor-pointer hover:text-[#14f195] transition-colors">
                     About
-                  </Link>
+                  </ScrollLink>
                 </li>
                 <li>
-                  <Link
-                    href="#"
-                    className="hover:text-[#14f195] transition-colors">
+                  <ScrollLink
+                    to="services"
+                    smooth={true}
+                    duration={500}
+                    className="cursor-pointer hover:text-[#14f195] transition-colors">
                     Services
-                  </Link>
+                  </ScrollLink>
                 </li>
                 <li>
-                  <Link
-                    href="#"
-                    className="hover:text-[#14f195] transition-colors">
+                  <ScrollLink
+                    to="features"
+                    smooth={true}
+                    duration={500}
+                    className="cursor-pointer hover:text-[#14f195] transition-colors">
                     Features
-                  </Link>
+                  </ScrollLink>
                 </li>
                 <li>
-                  <Link
-                    href="#"
-                    className="hover:text-[#14f195] transition-colors">
+                  <ScrollLink
+                    to="contact"
+                    smooth={true}
+                    duration={500}
+                    className="cursor-pointer hover:text-[#14f195] transition-colors">
                     Contact
-                  </Link>
+                  </ScrollLink>
                 </li>
               </ul>
             </div>
@@ -741,32 +764,40 @@ export default function Home() {
               <h3 className="text-white font-semibold mb-4">Services</h3>
               <ul className="space-y-2">
                 <li>
-                  <Link
-                    href="#"
-                    className="hover:text-[#14f195] transition-colors">
+                  <ScrollLink
+                    to="services"
+                    smooth={true}
+                    duration={500}
+                    className="cursor-pointer hover:text-[#14f195] transition-colors">
                     Smart Contract Audits
-                  </Link>
+                  </ScrollLink>
                 </li>
                 <li>
-                  <Link
-                    href="#"
-                    className="hover:text-[#14f195] transition-colors">
+                  <ScrollLink
+                    to="services"
+                    smooth={true}
+                    duration={500}
+                    className="cursor-pointer hover:text-[#14f195] transition-colors">
                     Security Assessments
-                  </Link>
+                  </ScrollLink>
                 </li>
                 <li>
-                  <Link
-                    href="#"
-                    className="hover:text-[#14f195] transition-colors">
+                  <ScrollLink
+                    to="services"
+                    smooth={true}
+                    duration={500}
+                    className="cursor-pointer hover:text-[#14f195] transition-colors">
                     Code Reviews
-                  </Link>
+                  </ScrollLink>
                 </li>
                 <li>
-                  <Link
-                    href="#"
-                    className="hover:text-[#14f195] transition-colors">
+                  <ScrollLink
+                    to="services"
+                    smooth={true}
+                    duration={500}
+                    className="cursor-pointer hover:text-[#14f195] transition-colors">
                     Vulnerability Scanning
-                  </Link>
+                  </ScrollLink>
                 </li>
               </ul>
             </div>
@@ -774,18 +805,22 @@ export default function Home() {
               <h3 className="text-white font-semibold mb-4">Legal</h3>
               <ul className="space-y-2">
                 <li>
-                  <Link
-                    href="#"
-                    className="hover:text-[#14f195] transition-colors">
+                  <ScrollLink
+                    to="privacy-policy"
+                    smooth={true}
+                    duration={500}
+                    className="cursor-pointer hover:text-[#14f195] transition-colors">
                     Privacy Policy
-                  </Link>
+                  </ScrollLink>
                 </li>
                 <li>
-                  <Link
-                    href="#"
-                    className="hover:text-[#14f195] transition-colors">
+                  <ScrollLink
+                    to="terms-of-service"
+                    smooth={true}
+                    duration={500}
+                    className="cursor-pointer hover:text-[#14f195] transition-colors">
                     Terms of Service
-                  </Link>
+                  </ScrollLink>
                 </li>
               </ul>
             </div>
