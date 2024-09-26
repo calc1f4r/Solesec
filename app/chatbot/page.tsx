@@ -3,7 +3,6 @@
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent } from "@/components/ui/card";
 import { Loader2, Plus, Menu, X, Send, User, Bot } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { remark } from "remark";
@@ -36,25 +35,22 @@ const MessageBubble: React.FC<{ message: ChatMessage }> = ({ message }) => (
           message.role === "user" ? "ml-2" : "mr-2"
         }`}>
         {message.role === "user" ? (
-          <div className="bg-gradient-to-br from-[#14F195] to-[#9945FF] rounded-full p-2 shadow-lg">
-            <User className="h-5 w-5 text-white" />
+          <div className="bg-black bg-opacity-30 backdrop-blur-sm rounded-full p-2 shadow-lg">
+            <User className="h-5 w-5 text-[#14F195]" />
           </div>
         ) : (
-          <div className="bg-gradient-to-br from-[#9945FF] to-[#14F195] rounded-full p-2 shadow-lg">
-            <Bot className="h-5 w-5 text-white" />
+          <div className="bg-black bg-opacity-30 backdrop-blur-sm rounded-full p-2 shadow-lg">
+            <Bot className="h-5 w-5 text-[#9945FF]" />
           </div>
         )}
       </div>
-      <Card
-        className={`${
-          message.role === "user" ? "bg-zinc-800" : "bg-zinc-900"
-        } border-none rounded-lg shadow-md`}>
-        <CardContent className="p-3">
-          <ReactMarkdown className="prose prose-invert prose-sm max-w-none">
+      <div className="bg-black bg-opacity-30 backdrop-blur-sm rounded-lg shadow-md overflow-hidden">
+        <div className="p-3">
+          <ReactMarkdown className="prose prose-invert prose-sm max-w-none text-zinc-300">
             {message.content}
           </ReactMarkdown>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   </div>
 );
@@ -159,6 +155,13 @@ export default function ChatbotPage() {
     setIsSidebarOpen(false);
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSubmit(e as unknown as React.FormEvent);
+    }
+  };
+
   return (
     <div className="flex h-screen bg-gradient-to-br from-black to-zinc-900 text-zinc-50 font-sans">
       {/* Sidebar */}
@@ -222,8 +225,9 @@ export default function ChatbotPage() {
               <Textarea
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
+                onKeyDown={handleKeyDown} // Add this line
                 placeholder="Enter code to audit"
-                className="w-full bg-black bg-opacity-50 text-zinc-50 border border-zinc-800 focus:ring-2 focus:ring-[#14F195] placeholder-zinc-400 resize-none rounded-full py-3 px-6"
+                className="w-full bg-black bg-opacity-50 text-zinc-50 border border-zinc-800 focus:ring-2 focus:ring-[#14F195] placeholder-zinc-400 resize-none rounded-full py-3 px-6 scrollbar-thin scrollbar-thumb-zinc-700 scrollbar-track-black"
                 rows={1}
               />
             </div>

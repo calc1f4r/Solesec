@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
 import { Link as ScrollLink, animateScroll as scroll } from "react-scroll";
+import Link from "next/link";
 
 import {
   ChevronRight,
@@ -117,18 +118,15 @@ export default function Home() {
               <FileSearch className="w-4 h-4 mr-2" />
               Request Audit
             </Button>
-            <ScrollLink
-              to="chatbot"
-              smooth={true}
-              duration={500}
-              className="cursor-pointer">
+
+            <Link href="/chatbot">
               <Button
                 variant="outline"
                 className="border-[#9945ff] text-white bg-[#9945ff]/20 hover:bg-[#9945ff] hover:text-black transition-colors">
                 <Bot className="w-4 h-4 mr-2" />
                 Chat with Code
               </Button>
-            </ScrollLink>
+            </Link>
           </div>
           <Button variant="ghost" className="md:hidden">
             <svg
@@ -154,7 +152,7 @@ export default function Home() {
           id="home"
           className="container mx-auto px-4 py-20 flex flex-col md:flex-row items-center">
           <FadeInSection>
-            <div className="md:w-1/2 mb-10 md:mb-0 mb-5">
+            <div className="w-full md:w-2/3 mb-10 md:mb-0 flex-grow">
               <h1 className="text-4xl pb-2 md:text-5xl font-bold mb-12 bg-gradient-to-r from-[#14f195] to-[#9945ff] bg-clip-text text-transparent">
                 AI-Powered Solana Smart Contract Auditing
               </h1>
@@ -171,19 +169,16 @@ export default function Home() {
               </Button>
             </div>
           </FadeInSection>
-          <FadeInSection>
-            <div className="md:w-1/2">
-              <Image
-                src="/images/hero.png"
-                alt="AI analyzing Solana smart contracts"
-                width={600}
-                height={400}
-                className="rounded-lg shadow-lg object-cover"
-              />
-            </div>
-          </FadeInSection>
+          <div className="w-full md:w-1/3 flex-shrink-0 flex justify-center">
+            <Image
+              src="/images/file.png"
+              alt="AI analyzing Solana smart contracts"
+              width={400} // Decreased width
+              height={300} // Decreased height
+              className="rounded-lg shadow-lg object-cover"
+            />
+          </div>
         </section>
-
         {/* About Us Section */}
         <section
           id="about"
@@ -826,7 +821,7 @@ export default function Home() {
             </div>
           </div>
           <div className="border-t border-[#14f195]/10 mt-8 pt-8 text-sm text-center">
-            © {new Date().getFullYear()} solsec.xyz. All rights reserved.
+            © {new Date().getFullYear()} solesec.xyz. All rights reserved.
           </div>
         </div>
       </footer>
