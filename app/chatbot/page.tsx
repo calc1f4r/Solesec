@@ -72,7 +72,7 @@ const MessageBubble: React.FC<{ message: ChatMessage }> = ({ message }) => {
           <button
             onClick={() => handleCopy(code, match?.index ?? 0)}
             className={`absolute top-2 right-2 p-1 rounded-md bg-zinc-700 hover:bg-zinc-600 transition-all duration-200 ${
-              isPushed === (match?.index ?? -1) ? 'scale-90' : 'scale-100'
+              isPushed === (match?.index ?? -1) ? "scale-90" : "scale-100"
             }`}>
             {copiedIndex === (match?.index ?? -1) ? (
               <Check className="h-4 w-4 text-green-400" />
@@ -95,7 +95,6 @@ const MessageBubble: React.FC<{ message: ChatMessage }> = ({ message }) => {
       </ReactMarkdown>
     );
   }
-
   return (
     <div
       className={`flex ${
@@ -219,7 +218,7 @@ export default function ChatbotPage() {
                 key={entry.id}
                 onClick={() => loadChatHistory(entry)}
                 className="w-full bg-zinc-900 hover:bg-zinc-800 text-left text-zinc-50 font-medium py-2 px-4 rounded-md transition-colors duration-300 overflow-hidden overflow-ellipsis whitespace-nowrap">
-                {entry.messages[0].content.slice(0, 20)}...
+                {entry.messages[0].content.slice(0, 20)}
               </Button>
             ))}
           </div>
