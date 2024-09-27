@@ -3,12 +3,22 @@
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Loader2, Plus, Menu, X, Send, User, Bot } from "lucide-react";
+import {
+  Loader2,
+  Plus,
+  Menu,
+  X,
+  Send,
+  User,
+  Bot,
+  Copy,
+  Check,
+} from "lucide-react";
 import ReactMarkdown from "react-markdown";
-import { remark } from "remark";
-import remarkLint from "remark-lint";
-import remarkPresetLintRecommended from "remark-preset-lint-recommended";
 import Image from "next/image";
+import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
+import { synthwave84 } from "react-syntax-highlighter/dist/esm/styles/prism";
+import { useAuditRequest } from "../hooks/useAuditRequest";
 
 interface ChatMessage {
   role: "user" | "assistant";
@@ -21,47 +31,109 @@ interface AuditEntry {
   timestamp: Date;
 }
 
-const MessageBubble: React.FC<{ message: ChatMessage }> = ({ message }) => (
-  <div
-    className={`flex ${
-      message.role === "user" ? "justify-end" : "justify-start"
-    } mb-4`}>
-    <div
-      className={`flex ${
-        message.role === "user" ? "flex-row-reverse" : "flex-row"
-      } items-start max-w-[80%]`}>
-      <div
-        className={`flex-shrink-0 ${
-          message.role === "user" ? "ml-2" : "mr-2"
-        }`}>
-        {message.role === "user" ? (
-          <div className="bg-black bg-opacity-30 backdrop-blur-sm rounded-full p-2 shadow-lg">
-            <User className="h-5 w-5 text-[#14F195]" />
-          </div>
-        ) : (
-          <div className="bg-black bg-opacity-30 backdrop-blur-sm rounded-full p-2 shadow-lg">
-            <Bot className="h-5 w-5 text-[#9945FF]" />
-          </div>
+const MessageBubble: React.FC<{ message: ChatMessage }> = ({ message }) => {
+  const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
+  const [isPushed, setIsPushed] = useState<number | null>(null);
+  const codeRegex = /```rust\n([\s\S]*?)```/g;
+  const parts = [];
+  let lastIndex = 0;
+  let match: RegExpExecArray | null;
+
+  const handleCopy = (code: string, index: number) => {
+    navigator.clipboard.writeText(code);
+    setCopiedIndex(index);
+    setIsPushed(index);
+    setTimeout(() => {
+      setCopiedIndex(null);
+      setIsPushed(null);
+    }, 500);
+  };
+
+  while ((match = codeRegex.exec(message.content)) !== null) {
+    if (match.index > lastIndex) {
+      parts.push(
+        <ReactMarkdown
+          key={lastIndex}
+          className="prose prose-invert prose-sm max-w-none text-zinc-300">
+          {message.content.slice(lastIndex, match.index)}
+        </ReactMarkdown>
+      );
+    }
+    const code = match[1].trim();
+    parts.push(
+      <div key={match.index} className="relative">
+        <SyntaxHighlighter
+          language="rust"
+          style={synthwave84}
+          className="rounded-md my-2 pr-10">
+          {code}
+        </SyntaxHighlighter>
+        {match && (
+          <button
+            onClick={() => handleCopy(code, match?.index ?? 0)}
+            className={`absolute top-2 right-2 p-1 rounded-md bg-zinc-700 hover:bg-zinc-600 transition-all duration-200 ${
+              isPushed === (match?.index ?? -1) ? 'scale-90' : 'scale-100'
+            }`}>
+            {copiedIndex === (match?.index ?? -1) ? (
+              <Check className="h-4 w-4 text-green-400" />
+            ) : (
+              <Copy className="h-4 w-4 text-zinc-300" />
+            )}
+          </button>
         )}
       </div>
-      <div className="bg-black bg-opacity-30 backdrop-blur-sm rounded-lg shadow-md overflow-hidden">
-        <div className="p-3">
-          <ReactMarkdown className="prose prose-invert prose-sm max-w-none text-zinc-300">
-            {message.content}
-          </ReactMarkdown>
+    );
+    lastIndex = match.index + match[0].length;
+  }
+
+  if (lastIndex < message.content.length) {
+    parts.push(
+      <ReactMarkdown
+        key={lastIndex}
+        className="prose prose-invert prose-sm max-w-none text-zinc-300">
+        {message.content.slice(lastIndex)}
+      </ReactMarkdown>
+    );
+  }
+
+  return (
+    <div
+      className={`flex ${
+        message.role === "user" ? "justify-end" : "justify-start"
+      } mb-4 relative`}>
+      <div
+        className={`flex ${
+          message.role === "user" ? "flex-row-reverse" : "flex-row"
+        } items-start max-w-[80%]`}>
+        <div
+          className={`flex-shrink-0 ${
+            message.role === "user" ? "ml-2" : "mr-2"
+          }`}>
+          {message.role === "user" ? (
+            <div className="bg-black bg-opacity-30 backdrop-blur-sm rounded-full p-2 shadow-lg">
+              <User className="h-5 w-5 text-[#14F195]" />
+            </div>
+          ) : (
+            <div className="bg-black bg-opacity-30 backdrop-blur-sm rounded-full p-2 shadow-lg">
+              <Bot className="h-5 w-5 text-[#9945FF]" />
+            </div>
+          )}
+        </div>
+        <div className="bg-black bg-opacity-30 backdrop-blur-sm rounded-lg shadow-md overflow-hidden">
+          <div className="p-3">{parts}</div>
         </div>
       </div>
     </div>
-  </div>
-);
+  );
+};
 
 export default function ChatbotPage() {
   const [input, setInput] = useState("");
   const [currentChat, setCurrentChat] = useState<ChatMessage[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
   const [history, setHistory] = useState<AuditEntry[]>([]);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const { result, isLoading, error, requestAudit } = useAuditRequest();
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -69,82 +141,44 @@ export default function ChatbotPage() {
 
   useEffect(scrollToBottom, [currentChat]);
 
-  const lintMarkdown = async (content: string) => {
-    const file = await remark()
-      .use(remarkLint)
-      .use(remarkPresetLintRecommended)
-      .process(content);
-
-    return file.messages.map((message) => ({
-      line: message.line,
-      column: message.column,
-      reason: message.reason,
-    }));
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim()) return;
 
+    console.log("Submitting input:", input);
+
     const newMessage: ChatMessage = { role: "user", content: input };
     setCurrentChat((prev) => [...prev, newMessage]);
-    setInput("");
-    setIsLoading(true);
 
     try {
-      // Lint the markdown
-      const lintResults = await lintMarkdown(input);
-
-      // If there are lint issues, display them
-      if (lintResults.length > 0) {
-        const lintMessage = `Markdown linting issues:\n${lintResults
-          .map(
-            (issue) =>
-              `- Line ${issue.line}, Column ${issue.column}: ${issue.reason}`
-          )
-          .join("\n")}`;
-
-        setCurrentChat((prev) => [
-          ...prev,
-          { role: "assistant", content: lintMessage },
-        ]);
-      } else {
-        // Proceed with the audit if no lint issues
-        const response = await fetch("/api/audit", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ code: input }),
-        });
-        if (!response.ok) {
-          throw new Error("Network response was not ok");
-        }
-        const data = await response.json();
-        const assistantMessage: ChatMessage = {
-          role: "assistant",
-          content: data.result,
-        };
-        setCurrentChat((prev) => [...prev, assistantMessage]);
-
-        const newEntry: AuditEntry = {
-          id: Date.now().toString(),
-          messages: [newMessage, assistantMessage],
-          timestamp: new Date(),
-        };
-        setHistory((prev) => [newEntry, ...prev]);
-      }
-    } catch (error) {
-      console.error("Error:", error);
+      await requestAudit(input);
+      setInput("");
+    } catch (err) {
+      console.error("Error in handleSubmit:", err);
       const errorMessage: ChatMessage = {
         role: "assistant",
         content: "An error occurred while processing your request.",
       };
       setCurrentChat((prev) => [...prev, errorMessage]);
-    } finally {
-      setIsLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (result) {
+      const assistantMessage: ChatMessage = {
+        role: "assistant",
+        content: result.message,
+      };
+      setCurrentChat((prev) => [...prev, assistantMessage]);
+
+      const newEntry: AuditEntry = {
+        id: Date.now().toString(),
+        messages: [...currentChat, assistantMessage],
+        timestamp: new Date(),
+      };
+      setHistory((prev) => [newEntry, ...prev]);
+    }
+  }, [result]);
 
   const startNewChat = () => {
     setCurrentChat([]);
