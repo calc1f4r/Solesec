@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
-import { Link as ScrollLink, animateScroll as scroll } from "react-scroll";
+import Link from "next/link";
 
 import {
   ChevronRight,
@@ -55,10 +55,8 @@ export default function Home() {
     <div className="min-h-screen bg-black text-white">
       <header className="fixed top-0 left-0 right-0 z-50 bg-black/80 backdrop-blur-sm border-b border-[#14f195]/10">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <ScrollLink
-            to="home"
-            smooth={true}
-            duration={500}
+          <Link
+            href="/"
             className="flex items-center space-x-2 cursor-pointer">
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -71,44 +69,34 @@ export default function Home() {
               className="h-6 w-6 text-[#14f195]">
               <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
             </svg>
-            <span className="text-xl font-bold">SOLSEC</span>
-          </ScrollLink>
+            <span className="text-xl font-bold">SOLESEC</span>
+          </Link>
           <nav className="hidden md:flex space-x-6">
-            <ScrollLink
-              to="home"
-              smooth={true}
-              duration={500}
+            <Link
+              href="#home"
               className="cursor-pointer hover:text-[#14f195] transition-colors">
               Home
-            </ScrollLink>
-            <ScrollLink
-              to="about"
-              smooth={true}
-              duration={500}
+            </Link>
+            <Link
+              href="#about"
               className="cursor-pointer hover:text-[#14f195] transition-colors">
               About
-            </ScrollLink>
-            <ScrollLink
-              to="services"
-              smooth={true}
-              duration={500}
+            </Link>
+            <Link
+              href="#services"
               className="cursor-pointer hover:text-[#14f195] transition-colors">
               Services
-            </ScrollLink>
-            <ScrollLink
-              to="features"
-              smooth={true}
-              duration={500}
+            </Link>
+            <Link
+              href="#features"
               className="cursor-pointer hover:text-[#14f195] transition-colors">
               Features
-            </ScrollLink>
-            <ScrollLink
-              to="contact"
-              smooth={true}
-              duration={500}
+            </Link>
+            <Link
+              href="#contact"
               className="cursor-pointer hover:text-[#14f195] transition-colors">
               Contact
-            </ScrollLink>
+            </Link>
           </nav>
           <div className="hidden md:flex items-center justify-center space-x-4">
             <Button
@@ -117,18 +105,15 @@ export default function Home() {
               <FileSearch className="w-4 h-4 mr-2" />
               Request Audit
             </Button>
-            <ScrollLink
-              to="chatbot"
-              smooth={true}
-              duration={500}
-              className="cursor-pointer">
+
+            <Link href="/chatbot">
               <Button
                 variant="outline"
                 className="border-[#9945ff] text-white bg-[#9945ff]/20 hover:bg-[#9945ff] hover:text-black transition-colors">
                 <Bot className="w-4 h-4 mr-2" />
                 Chat with Code
               </Button>
-            </ScrollLink>
+            </Link>
           </div>
           <Button variant="ghost" className="md:hidden">
             <svg
@@ -152,9 +137,9 @@ export default function Home() {
         {/* Hero Section */}
         <section
           id="home"
-          className="container mx-auto px-4 py-20 flex flex-col md:flex-row items-center">
+          className="container mx-auto px-4 py-20 flex flex-col md:flex-row items-center justify-between">
           <FadeInSection>
-            <div className="md:w-1/2 mb-10 md:mb-0 mb-5">
+            <div className="w-full md:w-1/2 mb-10 md:mb-0">
               <h1 className="text-4xl pb-2 md:text-5xl font-bold mb-12 bg-gradient-to-r from-[#14f195] to-[#9945ff] bg-clip-text text-transparent">
                 AI-Powered Solana Smart Contract Auditing
               </h1>
@@ -171,19 +156,16 @@ export default function Home() {
               </Button>
             </div>
           </FadeInSection>
-          <FadeInSection>
-            <div className="md:w-1/2">
-              <Image
-                src="/images/hero.png"
-                alt="AI analyzing Solana smart contracts"
-                width={600}
-                height={400}
-                className="rounded-lg shadow-lg object-cover"
-              />
-            </div>
-          </FadeInSection>
+          <div className="w-full md:w-1/2 flex justify-center">
+            <Image
+              src="/images/file.png"
+              alt="AI analyzing Solana smart contracts"
+              width={400}
+              height={300}
+              className="rounded-lg shadow-lg object-cover"
+            />
+          </div>
         </section>
-
         {/* About Us Section */}
         <section
           id="about"
@@ -193,8 +175,8 @@ export default function Home() {
               <h2 className="text-3xl font-bold mb-8 text-center text-[#14f195]">
                 About Our Automated Workflow
               </h2>
-              <div className="flex flex-col md:flex-row items-center">
-                <div className="md:w-1/2 mb-10 md:mb-0">
+              <div className="flex flex-col md:flex-row items-center justify-between">
+                <div className="md:w-1/2 md:pr-10">
                   <p className="text-gray-300 mb-4">
                     At solsec.xyz, we've revolutionized the smart contract
                     auditing process with our fully automated AI-powered system.
@@ -209,9 +191,9 @@ export default function Home() {
                     all without human intervention.
                   </p>
                 </div>
-                <div className="md:w-1/2 md:pl-10">
+                <div className="md:w-1/2 flex justify-end mt-10 md:mt-0">
                   <Image
-                    src="https://images.unsplash.com/photo-1639803938107-1e5a67d959d4?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1632&q=80"
+                    src="/images/solana-banner.png"
                     alt="AI and Blockchain Intersection"
                     width={500}
                     height={300}
@@ -521,7 +503,7 @@ export default function Home() {
                     className="bg-black/50 border-[#14f195]/20 hover:bg-[#14f195]/10 transition-all duration-300">
                     <CardContent className="p-6">
                       <p className="text-gray-300 mb-4">
-                        "{testimonial.quote}"
+                        {`"${testimonial.quote}"`}
                       </p>
                       <div className="flex items-center">
                         <Image
@@ -652,7 +634,7 @@ export default function Home() {
                         </label>
                         <Input
                           id="subject"
-                          placeholder="What's this about?"
+                          placeholder={`What's this about?`}
                           className="bg-black/50 border-[#9945ff]/20 text-white placeholder-gray-500 focus:border-[#14f195] transition-colors"
                         />
                       </div>
@@ -688,10 +670,8 @@ export default function Home() {
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div>
-              <ScrollLink
-                to="home"
-                smooth={true}
-                duration={500}
+              <Link
+                href="/"
                 className="flex items-center space-x-2 mb-4 cursor-pointer">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -705,7 +685,7 @@ export default function Home() {
                   <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
                 </svg>
                 <span className="text-xl font-bold text-white">sol7audit</span>
-              </ScrollLink>
+              </Link>
               <p className="text-sm">
                 AI-Powered Solana Smart Contract Auditing
               </p>
@@ -714,49 +694,39 @@ export default function Home() {
               <h3 className="text-white font-semibold mb-4">Quick Links</h3>
               <ul className="space-y-2">
                 <li>
-                  <ScrollLink
-                    to="home"
-                    smooth={true}
-                    duration={500}
+                  <Link
+                    href="#home"
                     className="cursor-pointer hover:text-[#14f195] transition-colors">
                     Home
-                  </ScrollLink>
+                  </Link>
                 </li>
                 <li>
-                  <ScrollLink
-                    to="about"
-                    smooth={true}
-                    duration={500}
+                  <Link
+                    href="#about"
                     className="cursor-pointer hover:text-[#14f195] transition-colors">
                     About
-                  </ScrollLink>
+                  </Link>
                 </li>
                 <li>
-                  <ScrollLink
-                    to="services"
-                    smooth={true}
-                    duration={500}
+                  <Link
+                    href="#services"
                     className="cursor-pointer hover:text-[#14f195] transition-colors">
                     Services
-                  </ScrollLink>
+                  </Link>
                 </li>
                 <li>
-                  <ScrollLink
-                    to="features"
-                    smooth={true}
-                    duration={500}
+                  <Link
+                    href="#features"
                     className="cursor-pointer hover:text-[#14f195] transition-colors">
                     Features
-                  </ScrollLink>
+                  </Link>
                 </li>
                 <li>
-                  <ScrollLink
-                    to="contact"
-                    smooth={true}
-                    duration={500}
+                  <Link
+                    href="#contact"
                     className="cursor-pointer hover:text-[#14f195] transition-colors">
                     Contact
-                  </ScrollLink>
+                  </Link>
                 </li>
               </ul>
             </div>
@@ -764,40 +734,32 @@ export default function Home() {
               <h3 className="text-white font-semibold mb-4">Services</h3>
               <ul className="space-y-2">
                 <li>
-                  <ScrollLink
-                    to="services"
-                    smooth={true}
-                    duration={500}
+                  <Link
+                    href="#services"
                     className="cursor-pointer hover:text-[#14f195] transition-colors">
                     Smart Contract Audits
-                  </ScrollLink>
+                  </Link>
                 </li>
                 <li>
-                  <ScrollLink
-                    to="services"
-                    smooth={true}
-                    duration={500}
+                  <Link
+                    href="#services"
                     className="cursor-pointer hover:text-[#14f195] transition-colors">
                     Security Assessments
-                  </ScrollLink>
+                  </Link>
                 </li>
                 <li>
-                  <ScrollLink
-                    to="services"
-                    smooth={true}
-                    duration={500}
+                  <Link
+                    href="#services"
                     className="cursor-pointer hover:text-[#14f195] transition-colors">
                     Code Reviews
-                  </ScrollLink>
+                  </Link>
                 </li>
                 <li>
-                  <ScrollLink
-                    to="services"
-                    smooth={true}
-                    duration={500}
+                  <Link
+                    href="#services"
                     className="cursor-pointer hover:text-[#14f195] transition-colors">
                     Vulnerability Scanning
-                  </ScrollLink>
+                  </Link>
                 </li>
               </ul>
             </div>
@@ -805,28 +767,24 @@ export default function Home() {
               <h3 className="text-white font-semibold mb-4">Legal</h3>
               <ul className="space-y-2">
                 <li>
-                  <ScrollLink
-                    to="privacy-policy"
-                    smooth={true}
-                    duration={500}
+                  <Link
+                    href="#privacy-policy"
                     className="cursor-pointer hover:text-[#14f195] transition-colors">
                     Privacy Policy
-                  </ScrollLink>
+                  </Link>
                 </li>
                 <li>
-                  <ScrollLink
-                    to="terms-of-service"
-                    smooth={true}
-                    duration={500}
+                  <Link
+                    href="#terms-of-service"
                     className="cursor-pointer hover:text-[#14f195] transition-colors">
                     Terms of Service
-                  </ScrollLink>
+                  </Link>
                 </li>
               </ul>
             </div>
           </div>
           <div className="border-t border-[#14f195]/10 mt-8 pt-8 text-sm text-center">
-            © {new Date().getFullYear()} solsec.xyz. All rights reserved.
+            © {new Date().getFullYear()} solesec.xyz. All rights reserved.
           </div>
         </div>
       </footer>

@@ -3,13 +3,22 @@
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent } from "@/components/ui/card";
-import { Loader2, Plus, Menu, X, Send, User, Bot } from "lucide-react";
+import {
+  Loader2,
+  Plus,
+  Menu,
+  X,
+  Send,
+  User,
+  Bot,
+  Copy,
+  Check,
+} from "lucide-react";
 import ReactMarkdown from "react-markdown";
-import { remark } from "remark";
-import remarkLint from "remark-lint";
-import remarkPresetLintRecommended from "remark-preset-lint-recommended";
 import Image from "next/image";
+import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
+import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
+import { useAuditRequest } from "../hooks/useAuditRequest";
 
 interface ChatMessage {
   role: "user" | "assistant";
@@ -22,50 +31,108 @@ interface AuditEntry {
   timestamp: Date;
 }
 
-const MessageBubble: React.FC<{ message: ChatMessage }> = ({ message }) => (
-  <div
-    className={`flex ${
-      message.role === "user" ? "justify-end" : "justify-start"
-    } mb-4`}>
+const MessageBubble: React.FC<{ message: ChatMessage }> = ({ message }) => {
+  const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
+  const [isPushed, setIsPushed] = useState<number | null>(null);
+  const codeRegex = /```rust\n([\s\S]*?)```/g;
+  const parts = [];
+  let lastIndex = 0;
+  let match: RegExpExecArray | null;
+
+  const handleCopy = (code: string, index: number) => {
+    navigator.clipboard.writeText(code);
+    setCopiedIndex(index);
+    setIsPushed(index);
+    setTimeout(() => {
+      setCopiedIndex(null);
+      setIsPushed(null);
+    }, 500);
+  };
+
+  while ((match = codeRegex.exec(message.content)) !== null) {
+    if (match.index > lastIndex) {
+      parts.push(
+        <ReactMarkdown
+          key={lastIndex}
+          className="prose prose-invert prose-sm max-w-none text-zinc-300">
+          {message.content.slice(lastIndex, match.index)}
+        </ReactMarkdown>
+      );
+    }
+    const code = match[1].trim();
+    const matchIndex = match.index;
+    parts.push(
+      <div key={matchIndex} className="relative">
+        <SyntaxHighlighter
+          language="rust"
+          style={vscDarkPlus}
+          className="rounded-md my-2 pr-10">
+          {code}
+        </SyntaxHighlighter>
+        <button
+          onClick={() => handleCopy(code, matchIndex)}
+          className={`absolute top-2 right-2 p-1 rounded-md bg-zinc-700 hover:bg-zinc-600 transition-all duration-200 ${
+            isPushed === matchIndex ? "scale-90" : "scale-100"
+          }`}>
+          {copiedIndex === matchIndex ? (
+            <Check className="h-4 w-4 text-green-400" />
+          ) : (
+            <Copy className="h-4 w-4 text-zinc-300" />
+          )}
+        </button>
+      </div>
+    );
+    lastIndex = matchIndex + match[0].length;
+  }
+
+  if (lastIndex < message.content.length) {
+    parts.push(
+      <ReactMarkdown
+        key={lastIndex}
+        className="prose prose-invert prose-sm max-w-none text-zinc-300">
+        {message.content.slice(lastIndex)}
+      </ReactMarkdown>
+    );
+  }
+
+  return (
     <div
       className={`flex ${
-        message.role === "user" ? "flex-row-reverse" : "flex-row"
-      } items-start max-w-[80%]`}>
+        message.role === "user" ? "justify-end" : "justify-start"
+      } mb-6 relative`}>
       <div
-        className={`flex-shrink-0 ${
-          message.role === "user" ? "ml-2" : "mr-2"
-        }`}>
-        {message.role === "user" ? (
-          <div className="bg-gradient-to-br from-[#14F195] to-[#9945FF] rounded-full p-2 shadow-lg">
-            <User className="h-5 w-5 text-white" />
-          </div>
-        ) : (
-          <div className="bg-gradient-to-br from-[#9945FF] to-[#14F195] rounded-full p-2 shadow-lg">
-            <Bot className="h-5 w-5 text-white" />
-          </div>
-        )}
+        className={`flex ${
+          message.role === "user" ? "flex-row-reverse" : "flex-row"
+        } items-start max-w-[80%]`}>
+        <div
+          className={`flex-shrink-0 ${
+            message.role === "user" ? "ml-2" : "mr-2"
+          }`}>
+          {message.role === "user" ? (
+            <div className="bg-black bg-opacity-30 backdrop-blur-sm rounded-full p-2 shadow-lg">
+              <User className="h-5 w-5 text-[#14F195]" />
+            </div>
+          ) : (
+            <div className="bg-black bg-opacity-30 backdrop-blur-sm rounded-full p-2 shadow-lg">
+              <Bot className="h-5 w-5 text-[#9945FF]" />
+            </div>
+          )}
+        </div>
+        <div className="bg-black bg-opacity-30 backdrop-blur-sm rounded-lg shadow-md overflow-hidden">
+          <div className="p-4 text-sm leading-relaxed">{parts}</div>
+        </div>
       </div>
-      <Card
-        className={`${
-          message.role === "user" ? "bg-zinc-800" : "bg-zinc-900"
-        } border-none rounded-lg shadow-md`}>
-        <CardContent className="p-3">
-          <ReactMarkdown className="prose prose-invert prose-sm max-w-none">
-            {message.content}
-          </ReactMarkdown>
-        </CardContent>
-      </Card>
     </div>
-  </div>
-);
+  );
+};
 
 export default function ChatbotPage() {
   const [input, setInput] = useState("");
   const [currentChat, setCurrentChat] = useState<ChatMessage[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
   const [history, setHistory] = useState<AuditEntry[]>([]);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const { result, isLoading, error, requestAudit } = useAuditRequest();
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -73,82 +140,44 @@ export default function ChatbotPage() {
 
   useEffect(scrollToBottom, [currentChat]);
 
-  const lintMarkdown = async (content: string) => {
-    const file = await remark()
-      .use(remarkLint)
-      .use(remarkPresetLintRecommended)
-      .process(content);
-
-    return file.messages.map((message) => ({
-      line: message.line,
-      column: message.column,
-      reason: message.reason,
-    }));
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim()) return;
 
+    console.log("Submitting input:", input);
+
     const newMessage: ChatMessage = { role: "user", content: input };
     setCurrentChat((prev) => [...prev, newMessage]);
-    setInput("");
-    setIsLoading(true);
 
     try {
-      // Lint the markdown
-      const lintResults = await lintMarkdown(input);
-
-      // If there are lint issues, display them
-      if (lintResults.length > 0) {
-        const lintMessage = `Markdown linting issues:\n${lintResults
-          .map(
-            (issue) =>
-              `- Line ${issue.line}, Column ${issue.column}: ${issue.reason}`
-          )
-          .join("\n")}`;
-
-        setCurrentChat((prev) => [
-          ...prev,
-          { role: "assistant", content: lintMessage },
-        ]);
-      } else {
-        // Proceed with the audit if no lint issues
-        const response = await fetch("/api/audit", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ code: input }),
-        });
-        if (!response.ok) {
-          throw new Error("Network response was not ok");
-        }
-        const data = await response.json();
-        const assistantMessage: ChatMessage = {
-          role: "assistant",
-          content: data.result,
-        };
-        setCurrentChat((prev) => [...prev, assistantMessage]);
-
-        const newEntry: AuditEntry = {
-          id: Date.now().toString(),
-          messages: [newMessage, assistantMessage],
-          timestamp: new Date(),
-        };
-        setHistory((prev) => [newEntry, ...prev]);
-      }
-    } catch (error) {
-      console.error("Error:", error);
+      await requestAudit(input);
+      setInput(""); // Clear the input after sending
+    } catch (err) {
+      console.error("Error in handleSubmit:", err);
       const errorMessage: ChatMessage = {
         role: "assistant",
         content: "An error occurred while processing your request.",
       };
       setCurrentChat((prev) => [...prev, errorMessage]);
-    } finally {
-      setIsLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (result) {
+      const assistantMessage: ChatMessage = {
+        role: "assistant",
+        content: result.message,
+      };
+      setCurrentChat((prev) => [...prev, assistantMessage]);
+
+      const newEntry: AuditEntry = {
+        id: Date.now().toString(),
+        messages: [...currentChat, assistantMessage],
+        timestamp: new Date(),
+      };
+      setHistory((prev) => [newEntry, ...prev]);
+    }
+  }, [result]);
 
   const startNewChat = () => {
     setCurrentChat([]);
@@ -157,6 +186,13 @@ export default function ChatbotPage() {
   const loadChatHistory = (entry: AuditEntry) => {
     setCurrentChat(entry.messages);
     setIsSidebarOpen(false);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSubmit(e as unknown as React.FormEvent);
+    }
   };
 
   return (
@@ -182,7 +218,7 @@ export default function ChatbotPage() {
                 key={entry.id}
                 onClick={() => loadChatHistory(entry)}
                 className="w-full bg-zinc-900 hover:bg-zinc-800 text-left text-zinc-50 font-medium py-2 px-4 rounded-md transition-colors duration-300 overflow-hidden overflow-ellipsis whitespace-nowrap">
-                {entry.messages[0].content.slice(0, 20)}...
+                {entry.messages[0].content.slice(0, 20)}
               </Button>
             ))}
           </div>
@@ -206,7 +242,7 @@ export default function ChatbotPage() {
         </div>
 
         {/* Chat Messages */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-4 relative z-10">
+        <div className="flex-1 overflow-y-auto p-6 space-y-6 relative z-10">
           {currentChat.map((message, index) => (
             <MessageBubble key={index} message={message} />
           ))}
@@ -222,8 +258,9 @@ export default function ChatbotPage() {
               <Textarea
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
+                onKeyDown={handleKeyDown}
                 placeholder="Enter code to audit"
-                className="w-full bg-black bg-opacity-50 text-zinc-50 border border-zinc-800 focus:ring-2 focus:ring-[#14F195] placeholder-zinc-400 resize-none rounded-full py-3 px-6"
+                className="w-full bg-black bg-opacity-50 text-zinc-50 border border-zinc-800 focus:ring-2 focus:ring-[#14F195] placeholder-zinc-400 resize-none rounded-full py-3 px-6 scrollbar-thin scrollbar-thumb-zinc-700 scrollbar-track-black"
                 rows={1}
               />
             </div>
