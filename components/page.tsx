@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent } from "@/components/ui/card"
-import { ChevronRight, Code, FileSearch, Lock, ShieldCheck, Zap, Bot, CreditCard } from "lucide-react"
+import { Code, ShieldCheck, Zap } from "lucide-react"
 
 const FadeInSection = ({ children }) => {
   const controls = useAnimation()
@@ -277,7 +277,7 @@ export function Page() {
                 ].map((testimonial, index) => (
                   <Card key={index} className="bg-black/50 border-[#14f195]/20 hover:bg-[#14f195]/10 transition-all duration-300">
                     <CardContent className="p-6">
-                      <p className="text-gray-300 mb-4">"{testimonial.quote}"</p>
+                      <p className="text-gray-300 mb-4">{`"${testimonial.quote}"`}</p>
                       <div className="flex items-center">
                         <div className="w-12 h-12 rounded-full bg-gradient-to-r from-[#14f195] to-[#9945ff] flex items-center justify-center mr-4">
                           <span className="text-xl font-bold text-black">{testimonial.name[0]}</span>

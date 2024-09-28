@@ -39,7 +39,7 @@ const MessageBubble: React.FC<{ message: ChatMessage }> = ({ message }) => (
           <ReactMarkdown
             className="prose prose-invert prose-sm max-w-none"
             components={{
-              code({node, inline, className, children, ...props}) {
+              code({ inline, className, children, ...props }) {
                 const match = /language-(\w+)/.exec(className || '')
                 return !inline && match ? (
                   <SyntaxHighlighter
