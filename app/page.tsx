@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import Image from "next/image";
+import { Link as ScrollLink } from 'react-scroll';
 
 import { motion, useAnimation, useInView } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -55,9 +56,7 @@ export default function Home() {
     <div className="min-h-screen bg-black text-white">
       <header className="fixed top-0 left-0 right-0 z-50 bg-black/80 backdrop-blur-sm border-b border-[#14f195]/10">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <Link
-            href="/"
-            className="flex items-center space-x-2 cursor-pointer">
+          <Link href="/" className="flex items-center space-x-2 cursor-pointer">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 24 24"
@@ -72,31 +71,56 @@ export default function Home() {
             <span className="text-xl font-bold">SOLESEC</span>
           </Link>
           <nav className="hidden md:flex space-x-6">
-            <Link
-              href="#home"
-              className="cursor-pointer hover:text-[#14f195] transition-colors">
+            <ScrollLink
+              to="home"
+              spy={true}
+              smooth={true}
+              offset={-70}
+              duration={500}
+              className="cursor-pointer hover:text-[#14f195] transition-colors"
+            >
               Home
-            </Link>
-            <Link
-              href="#about"
-              className="cursor-pointer hover:text-[#14f195] transition-colors">
+            </ScrollLink>
+            <ScrollLink
+              to="about"
+              spy={true}
+              smooth={true}
+              offset={-70}
+              duration={500}
+              className="cursor-pointer hover:text-[#14f195] transition-colors"
+            >
               About
-            </Link>
-            <Link
-              href="#services"
-              className="cursor-pointer hover:text-[#14f195] transition-colors">
+            </ScrollLink>
+            <ScrollLink
+              to="services"
+              spy={true}
+              smooth={true}
+              offset={-70}
+              duration={500}
+              className="cursor-pointer hover:text-[#14f195] transition-colors"
+            >
               Services
-            </Link>
-            <Link
-              href="#features"
-              className="cursor-pointer hover:text-[#14f195] transition-colors">
+            </ScrollLink>
+            <ScrollLink
+              to="features"
+              spy={true}
+              smooth={true}
+              offset={-70}
+              duration={500}
+              className="cursor-pointer hover:text-[#14f195] transition-colors"
+            >
               Features
-            </Link>
-            <Link
-              href="#contact"
-              className="cursor-pointer hover:text-[#14f195] transition-colors">
+            </ScrollLink>
+            <ScrollLink
+              to="contact"
+              spy={true}
+              smooth={true}
+              offset={-70}
+              duration={500}
+              className="cursor-pointer hover:text-[#14f195] transition-colors"
+            >
               Contact
-            </Link>
+            </ScrollLink>
           </nav>
           <div className="hidden md:flex items-center justify-center space-x-4">
             <Button
@@ -694,72 +718,64 @@ export default function Home() {
               <h3 className="text-white font-semibold mb-4">Quick Links</h3>
               <ul className="space-y-2">
                 <li>
-                  <Link
-                    href="#home"
-                    className="cursor-pointer hover:text-[#14f195] transition-colors">
+                  <ScrollLink
+                    to="home"
+                    spy={true}
+                    smooth={true}
+                    offset={-70}
+                    duration={500}
+                    className="cursor-pointer hover:text-[#14f195] transition-colors"
+                  >
                     Home
-                  </Link>
+                  </ScrollLink>
                 </li>
                 <li>
-                  <Link
-                    href="#about"
-                    className="cursor-pointer hover:text-[#14f195] transition-colors">
+                  <ScrollLink
+                    to="about"
+                    spy={true}
+                    smooth={true}
+                    offset={-70}
+                    duration={500}
+                    className="cursor-pointer hover:text-[#14f195] transition-colors"
+                  >
                     About
-                  </Link>
+                  </ScrollLink>
                 </li>
                 <li>
-                  <Link
-                    href="#services"
-                    className="cursor-pointer hover:text-[#14f195] transition-colors">
+                  <ScrollLink
+                    to="services"
+                    spy={true}
+                    smooth={true}
+                    offset={-70}
+                    duration={500}
+                    className="cursor-pointer hover:text-[#14f195] transition-colors"
+                  >
                     Services
-                  </Link>
+                  </ScrollLink>
                 </li>
                 <li>
-                  <Link
-                    href="#features"
-                    className="cursor-pointer hover:text-[#14f195] transition-colors">
+                  <ScrollLink
+                    to="features"
+                    spy={true}
+                    smooth={true}
+                    offset={-70}
+                    duration={500}
+                    className="cursor-pointer hover:text-[#14f195] transition-colors"
+                  >
                     Features
-                  </Link>
+                  </ScrollLink>
                 </li>
                 <li>
-                  <Link
-                    href="#contact"
-                    className="cursor-pointer hover:text-[#14f195] transition-colors">
+                  <ScrollLink
+                    to="contact"
+                    spy={true}
+                    smooth={true}
+                    offset={-70}
+                    duration={500}
+                    className="cursor-pointer hover:text-[#14f195] transition-colors"
+                  >
                     Contact
-                  </Link>
-                </li>
-              </ul>
-            </div>
-            <div>
-              <h3 className="text-white font-semibold mb-4">Services</h3>
-              <ul className="space-y-2">
-                <li>
-                  <Link
-                    href="#services"
-                    className="cursor-pointer hover:text-[#14f195] transition-colors">
-                    Smart Contract Audits
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="#services"
-                    className="cursor-pointer hover:text-[#14f195] transition-colors">
-                    Security Assessments
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="#services"
-                    className="cursor-pointer hover:text-[#14f195] transition-colors">
-                    Code Reviews
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="#services"
-                    className="cursor-pointer hover:text-[#14f195] transition-colors">
-                    Vulnerability Scanning
-                  </Link>
+                  </ScrollLink>
                 </li>
               </ul>
             </div>
