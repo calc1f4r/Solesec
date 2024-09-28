@@ -177,7 +177,7 @@ const MessageBubble: React.FC<{ message: ChatMessage }> = ({ message }) => {
           <div className="p-4 text-sm">
             {typeof message.displayContent === "string"
               ? renderContent(message.displayContent)
-              : message.displayContent}
+              : message.displayContent || renderContent(message.content)}
           </div>
         </div>
       </div>
@@ -248,10 +248,10 @@ export default function ChatbotPage() {
   useEffect(scrollToBottom, [currentChat]);
 
   const examplePrompts = [
-    "Explain Solana's architecture",
-    "How to optimize Solana smart contracts?",
-    "What are Solana's advantages?",
-    "Solana vs Ethereum comparison",
+    "Explain reentrancy vulnerabilities in Solana",
+    "How to prevent integer overflow in Solana programs?",
+    "What are common account confusion attacks in Solana?",
+    "Mitigating signer authorization vulnerabilities in Solana",
   ];
 
   const handleExamplePrompt = async (prompt: string) => {
@@ -297,6 +297,7 @@ export default function ChatbotPage() {
       content: messageContent,
       displayContent: displayContent,
     };
+
     setCurrentChat((prev) => [...prev, newMessage]);
     setIsTyping(true);
 
@@ -308,7 +309,28 @@ export default function ChatbotPage() {
     }
 
     try {
-      await requestAudit(messageContent);
+      const response = await requestAudit(messageContent);
+      console.log("Response received:", response);
+      if (response && response.message) {
+        const assistantMessage: ChatMessage = {
+          role: "assistant",
+          content: response.message,
+        };
+        setCurrentChat((prev) => {
+          const updatedChat = [...prev, assistantMessage];
+          console.log("Updated chat:", updatedChat);
+          return updatedChat;
+        });
+
+        setHistory((prev) => {
+          const newEntry: AuditEntry = {
+            id: Date.now().toString(),
+            messages: [...prev[0]?.messages || [], newMessage, assistantMessage],
+            timestamp: new Date(),
+          };
+          return [newEntry, ...prev];
+        });
+      }
     } catch (err) {
       console.error("Error in handleSubmit:", err);
       const errorMessage: ChatMessage = {
@@ -320,24 +342,6 @@ export default function ChatbotPage() {
       setIsTyping(false);
     }
   };
-
-  useEffect(() => {
-    if (result) {
-      setIsTyping(false);
-      const assistantMessage: ChatMessage = {
-        role: "assistant",
-        content: result.message,
-      };
-      setCurrentChat((prev) => [...prev, assistantMessage]);
-
-      const newEntry: AuditEntry = {
-        id: Date.now().toString(),
-        messages: [...currentChat, assistantMessage],
-        timestamp: new Date(),
-      };
-      setHistory((prev) => [newEntry, ...prev]);
-    }
-  }, [result]);
 
   const startNewChat = () => {
     setCurrentChat([]);
@@ -356,18 +360,18 @@ export default function ChatbotPage() {
   };
 
   return (
-    <div className="flex h-screen bg-gradient-to-br from-black to-zinc-900 text-zinc-50 font-sans">
+    <div className="flex flex-col md:flex-row h-screen bg-gradient-to-br from-black to-zinc-900 text-zinc-50 font-sans">
       {/* Sidebar */}
       <div
         className={`fixed inset-y-0 left-0 transform ${
           isSidebarOpen ? "translate-x-0" : "-translate-x-full"
-        } w-64 bg-zinc-950 transition-transform duration-300 ease-in-out z-20 md:relative md:translate-x-0 border-r border-zinc-800`}>
+        } w-64 bg-zinc-950 transition-transform duration-300 ease-in-out z-50 md:relative md:translate-x-0 border-r border-zinc-800`}>
         <div className="p-4 h-full flex flex-col">
           <Button
             onClick={startNewChat}
-            className="group w-full bg-black hover:bg-zinc-900 text-white font-medium py- px-5 rounded-md transition-all duration-300 mb-4 shadow-lg hover:shadow-xl border-2 border-[#14F195] hover:border-[#9945FF] relative overflow-hidden">
+            className="group w-full bg-black hover:bg-zinc-900 text-white font-medium py-2 px-4 rounded-md transition-all duration-300 mb-4 shadow-lg hover:shadow-xl border-2 border-[#14F195] hover:border-[#9945FF] relative overflow-hidden">
             <span className="absolute inset-0 bg-gradient-to-r from-[#14F195] to-[#9945FF] opacity-0 group-hover:opacity-20 transition-opacity duration-300"></span>
-            <span className="relative flex items-center justify-center p">
+            <span className="relative flex items-center justify-center">
               <Plus className="mr-2 h-5 w-5 group-hover:rotate-90 transition-transform duration-300" />
               New Chat
             </span>
@@ -390,7 +394,7 @@ export default function ChatbotPage() {
         {/* Solana Logo Background */}
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
           <div className="relative w-3/4 h-3/4 max-w-3xl max-h-3xl">
-            <div className="absolute inset-0 bg-gradient-to-br from-[#9945FF] to-[#14F195]   opacity-5 blur-3xl"></div>
+            <div className="absolute inset-0 bg-gradient-to-br from-[#9945FF] to-[#14F195] opacity-5 blur-3xl"></div>
             <Image
               src="/solana-logo-black.png"
               alt="Solana Logo"
@@ -402,7 +406,7 @@ export default function ChatbotPage() {
         </div>
 
         {/* Chat Messages */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-6 relative z-10">
+        <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-6 relative z-10">
           {currentChat.map((message, index) => (
             <MessageBubble key={index} message={message} />
           ))}
@@ -413,7 +417,7 @@ export default function ChatbotPage() {
         {/* Example Prompts */}
         {currentChat.length === 0 && (
           <div className="px-4 py-2 bg-zinc-950 border-t border-zinc-800">
-            <div className="flex justify-center space-x-2 mb-2">
+            <div className="flex flex-wrap justify-center gap-2 mb-2">
               {examplePrompts.map((prompt, index) => (
                 <Button
                   key={index}
@@ -430,49 +434,51 @@ export default function ChatbotPage() {
         <div className="p-4 bg-zinc-950 border-t border-zinc-800">
           <form
             onSubmit={handleSubmit}
-            className="mx-auto w-3/5 flex items-center space-x-2">
-            <div className="flex-1 relative">
+            className="mx-auto w-full md:w-4/5 lg:w-3/5 flex flex-col items-center space-y-2">
+            <div className="w-full flex flex-col md:flex-row items-center space-y-2 md:space-y-0 md:space-x-2">
               {uploadedFileName && (
-                <InputFileIndicator fileName={uploadedFileName} />
+                <div className="w-full md:w-auto order-2 md:order-1">
+                  <FileIndicator fileName={uploadedFileName} />
+                </div>
               )}
-              <Textarea
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={handleKeyDown}
-                placeholder={
-                  uploadedFileName ? "" : "Ask me anything about the solana 🚀"
-                }
-                className={`w-full bg-black bg-opacity-50 text-zinc-50 border border-zinc-800 focus:ring-2 focus:ring-[#14F195] placeholder-zinc-400 resize-none rounded-full py-5 pb-4 pt-4 scrollbar-thin scrollbar-thumb-zinc-700 scrollbar-track-black ${
-                  uploadedFileName ? "pl-28" : "pl-4"
-                } pr-12`}
-                rows={1}
-              />
+              <div className="w-full md:flex-1 relative order-1 md:order-2">
+                <Textarea
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  placeholder="Ask me anything about the solana 🚀"
+                  className="w-full bg-black bg-opacity-50 text-zinc-50 border border-zinc-800 focus:ring-2 focus:ring-[#14F195] placeholder-zinc-400 resize-none rounded-full py-3 md:py-5 pb-2 md:pb-4 pt-2 md:pt-4 scrollbar-thin scrollbar-thumb-zinc-700 scrollbar-track-black pl-4 pr-12"
+                  rows={1}
+                />
+              </div>
+              <div className="flex space-x-2 order-3">
+                <input
+                  type="file"
+                  accept=".rs"
+                  onChange={handleFileUpload}
+                  ref={fileInputRef}
+                  className="hidden"
+                />
+                <Button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="bg-black text-white font-medium rounded-full transition-all duration-300 flex items-center justify-center h-12 w-12 shadow-md hover:shadow-lg border-2 border-[#14F195] hover:border-[#9945FF]">
+                  <Upload className="h-6 w-6" />
+                  <span className="sr-only">Upload Rust File</span>
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={isLoading}
+                  className="bg-black text-white font-medium rounded-full transition-all duration-300 flex items-center justify-center h-12 w-12 shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed border-2 border-[#14F195] hover:border-[#9945FF]">
+                  {isLoading ? (
+                    <Loader2 className="h-6 w-6 animate-spin" />
+                  ) : (
+                    <Send className="h-6 w-6" />
+                  )}
+                  <span className="sr-only">Send</span>
+                </Button>
+              </div>
             </div>
-            <input
-              type="file"
-              accept=".rs"
-              onChange={handleFileUpload}
-              ref={fileInputRef}
-              className="hidden"
-            />
-            <Button
-              type="button"
-              onClick={() => fileInputRef.current?.click()}
-              className="bg-black text-white font-medium rounded-full transition-all duration-300 flex items-center justify-center h-12 w-12 shadow-md hover:shadow-lg border-2 border-[#14F195] hover:border-[#9945FF]">
-              <Upload className="h-6 w-6" />
-              <span className="sr-only">Upload Rust File</span>
-            </Button>
-            <Button
-              type="submit"
-              disabled={isLoading}
-              className="bg-black text-white font-medium rounded-full transition-all duration-300 flex items-center justify-center h-12 w-12 shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed border-2 border-[#14F195] hover:border-[#9945FF]">
-              {isLoading ? (
-                <Loader2 className="h-6 w-6 animate-spin" />
-              ) : (
-                <Send className="h-6 w-6" />
-              )}
-              <span className="sr-only">Send</span>
-            </Button>
           </form>
         </div>
       </div>
@@ -480,13 +486,21 @@ export default function ChatbotPage() {
       {/* Mobile menu button */}
       <Button
         onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-        className="md:hidden fixed top-4 left-4 z-30 bg-zinc-900 hover:bg-zinc-800 text-zinc-50 font-medium p-2 rounded-full transition-colors duration-300 shadow-lg">
+        className="md:hidden fixed top-4 left-4 z-50 bg-zinc-900 hover:bg-zinc-800 text-zinc-50 font-medium p-3 rounded-full transition-colors duration-300 shadow-lg">
         {isSidebarOpen ? (
-          <X className="h-6 w-6" />
+          <X className="h-7 w-7" />
         ) : (
-          <Menu className="h-6 w-6" />
+          <Menu className="h-7 w-7" />
         )}
       </Button>
+
+      {/* Overlay for mobile */}
+      {isSidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden"
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
     </div>
   );
 }

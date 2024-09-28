@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
-import { Link as ScrollLink } from 'react-scroll';
+import { Link as ScrollLink } from "react-scroll";
 
 import { motion, useAnimation, useInView } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -19,6 +19,7 @@ import {
   Zap,
   Bot,
   CreditCard,
+  X,
 } from "lucide-react";
 
 interface FadeInSectionProps {
@@ -52,6 +53,12 @@ const FadeInSection: React.FC<FadeInSectionProps> = ({ children }) => {
 };
 
 export default function Home() {
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  const toggleMobileMenu = () => {
+    setIsMobileMenuOpen(!isMobileMenuOpen);
+  };
+
   return (
     <div className="min-h-screen bg-black text-white">
       <header className="fixed top-0 left-0 right-0 z-50 bg-black/80 backdrop-blur-sm border-b border-[#14f195]/10">
@@ -77,8 +84,7 @@ export default function Home() {
               smooth={true}
               offset={-70}
               duration={500}
-              className="cursor-pointer hover:text-[#14f195] transition-colors"
-            >
+              className="cursor-pointer hover:text-[#14f195] transition-colors">
               Home
             </ScrollLink>
             <ScrollLink
@@ -87,8 +93,7 @@ export default function Home() {
               smooth={true}
               offset={-70}
               duration={500}
-              className="cursor-pointer hover:text-[#14f195] transition-colors"
-            >
+              className="cursor-pointer hover:text-[#14f195] transition-colors">
               About
             </ScrollLink>
             <ScrollLink
@@ -97,8 +102,7 @@ export default function Home() {
               smooth={true}
               offset={-70}
               duration={500}
-              className="cursor-pointer hover:text-[#14f195] transition-colors"
-            >
+              className="cursor-pointer hover:text-[#14f195] transition-colors">
               Services
             </ScrollLink>
             <ScrollLink
@@ -107,8 +111,7 @@ export default function Home() {
               smooth={true}
               offset={-70}
               duration={500}
-              className="cursor-pointer hover:text-[#14f195] transition-colors"
-            >
+              className="cursor-pointer hover:text-[#14f195] transition-colors">
               Features
             </ScrollLink>
             <ScrollLink
@@ -117,8 +120,7 @@ export default function Home() {
               smooth={true}
               offset={-70}
               duration={500}
-              className="cursor-pointer hover:text-[#14f195] transition-colors"
-            >
+              className="cursor-pointer hover:text-[#14f195] transition-colors">
               Contact
             </ScrollLink>
           </nav>
@@ -139,22 +141,103 @@ export default function Home() {
               </Button>
             </Link>
           </div>
-          <Button variant="ghost" className="md:hidden">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              className="w-6 h-6">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M4 6h16M4 12h16m-7 6h7"
-              />
-            </svg>
+          <Button
+            variant="ghost"
+            className="md:hidden"
+            onClick={toggleMobileMenu}>
+            {isMobileMenuOpen ? (
+              <X className="w-6 h-6" />
+            ) : (
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                className="w-6 h-6">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 6h16M4 12h16m-7 6h7"
+                />
+              </svg>
+            )}
           </Button>
         </div>
+
+        {/* Mobile Menu */}
+        {isMobileMenuOpen && (
+          <div className="md:hidden bg-black/95 backdrop-blur-sm">
+            <nav className="flex flex-col space-y-4 p-4">
+              <ScrollLink
+                to="home"
+                spy={true}
+                smooth={true}
+                offset={-70}
+                duration={500}
+                className="cursor-pointer hover:text-[#14f195] transition-colors"
+                onClick={() => setIsMobileMenuOpen(false)}>
+                Home
+              </ScrollLink>
+              <ScrollLink
+                to="about"
+                spy={true}
+                smooth={true}
+                offset={-70}
+                duration={500}
+                className="cursor-pointer hover:text-[#14f195] transition-colors"
+                onClick={() => setIsMobileMenuOpen(false)}>
+                About
+              </ScrollLink>
+              <ScrollLink
+                to="services"
+                spy={true}
+                smooth={true}
+                offset={-70}
+                duration={500}
+                className="cursor-pointer hover:text-[#14f195] transition-colors"
+                onClick={() => setIsMobileMenuOpen(false)}>
+                Services
+              </ScrollLink>
+              <ScrollLink
+                to="features"
+                spy={true}
+                smooth={true}
+                offset={-70}
+                duration={500}
+                className="cursor-pointer hover:text-[#14f195] transition-colors"
+                onClick={() => setIsMobileMenuOpen(false)}>
+                Features
+              </ScrollLink>
+              <ScrollLink
+                to="contact"
+                spy={true}
+                smooth={true}
+                offset={-70}
+                duration={500}
+                className="cursor-pointer hover:text-[#14f195] transition-colors"
+                onClick={() => setIsMobileMenuOpen(false)}>
+                Contact
+              </ScrollLink>
+            </nav>
+            <div className="flex flex-col space-y-4 p-4">
+              <Button
+                variant="outline"
+                className="w-full border-[#0ed180] bg-6 text-white bg-[#14f195]/30 hover:bg-[#14f195] hover:text-black transition-colors">
+                <FileSearch className="w-4 h-4 mr-2" />
+                Request Audit
+              </Button>
+              <Link href="/chatbot" className="w-full">
+                <Button
+                  variant="outline"
+                  className="w-full border-[#9945ff] text-white bg-[#9945ff]/20 hover:bg-[#9945ff] hover:text-black transition-colors">
+                  <Bot className="w-4 h-4 mr-2" />
+                  Chat with Code
+                </Button>
+              </Link>
+            </div>
+          </div>
+        )}
       </header>
 
       <main className="pt-20">
@@ -171,13 +254,16 @@ export default function Home() {
                 Leveraging open-source intelligence for unparalleled security
               </p>
               <p className="mb-8 text-gray-400">
-                solsec.xyz utilizes cutting-edge AI technology and comprehensive
-                open-source report analysis to provide fully automated,
-                state-of-the-art security audits for Solana smart contracts.
+                solesec.xyz utilizes cutting-edge AI technology and
+                comprehensive open-source report analysis to provide fully
+                automated, state-of-the-art security audits for Solana smart
+                contracts.
               </p>
-              <Button className="bg-[#14f195] hover:bg-[#9945ff] text-black font-bold">
-                Get Started
-              </Button>
+              <Link href="/chatbot">
+                <Button className="bg-[#14f195] hover:bg-[#9945ff] text-black font-bold">
+                  Get Started
+                </Button>
+              </Link>
             </div>
           </FadeInSection>
           <div className="w-full md:w-1/2 flex justify-center">
@@ -492,7 +578,7 @@ export default function Home() {
         </section>
 
         {/* Testimonials Section */}
-        <section className="py-20 bg-gradient-to-b from-black to-[#14f195]/10">
+        {/* <section className="py-20 bg-gradient-to-b from-black to-[#14f195]/10">
           <div className="container mx-auto px-4">
             <FadeInSection>
               <h2 className="text-3xl font-bold mb-12 text-center text-[#14f195]">
@@ -552,7 +638,7 @@ export default function Home() {
               </div>
             </FadeInSection>
           </div>
-        </section>
+        </section> */}
 
         {/* Payment Section */}
         <section className="py-20 bg-gradient-to-b from-[#14f195]/10 to-[#9945ff]/10">
@@ -724,8 +810,7 @@ export default function Home() {
                     smooth={true}
                     offset={-70}
                     duration={500}
-                    className="cursor-pointer hover:text-[#14f195] transition-colors"
-                  >
+                    className="cursor-pointer hover:text-[#14f195] transition-colors">
                     Home
                   </ScrollLink>
                 </li>
@@ -736,8 +821,7 @@ export default function Home() {
                     smooth={true}
                     offset={-70}
                     duration={500}
-                    className="cursor-pointer hover:text-[#14f195] transition-colors"
-                  >
+                    className="cursor-pointer hover:text-[#14f195] transition-colors">
                     About
                   </ScrollLink>
                 </li>
@@ -748,8 +832,7 @@ export default function Home() {
                     smooth={true}
                     offset={-70}
                     duration={500}
-                    className="cursor-pointer hover:text-[#14f195] transition-colors"
-                  >
+                    className="cursor-pointer hover:text-[#14f195] transition-colors">
                     Services
                   </ScrollLink>
                 </li>
@@ -760,8 +843,7 @@ export default function Home() {
                     smooth={true}
                     offset={-70}
                     duration={500}
-                    className="cursor-pointer hover:text-[#14f195] transition-colors"
-                  >
+                    className="cursor-pointer hover:text-[#14f195] transition-colors">
                     Features
                   </ScrollLink>
                 </li>
@@ -772,8 +854,7 @@ export default function Home() {
                     smooth={true}
                     offset={-70}
                     duration={500}
-                    className="cursor-pointer hover:text-[#14f195] transition-colors"
-                  >
+                    className="cursor-pointer hover:text-[#14f195] transition-colors">
                     Contact
                   </ScrollLink>
                 </li>
