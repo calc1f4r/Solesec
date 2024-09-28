@@ -17,7 +17,7 @@ import {
 import ReactMarkdown from "react-markdown";
 import Image from "next/image";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
-import { synthwave84 } from "react-syntax-highlighter/dist/esm/styles/prism";
+import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
 import { useAuditRequest } from "../hooks/useAuditRequest";
 
 interface ChatMessage {
@@ -60,30 +60,29 @@ const MessageBubble: React.FC<{ message: ChatMessage }> = ({ message }) => {
       );
     }
     const code = match[1].trim();
+    const matchIndex = match.index;
     parts.push(
-      <div key={match.index} className="relative">
+      <div key={matchIndex} className="relative">
         <SyntaxHighlighter
           language="rust"
-          style={synthwave84}
+          style={vscDarkPlus}
           className="rounded-md my-2 pr-10">
           {code}
         </SyntaxHighlighter>
-        {match && (
-          <button
-            onClick={() => handleCopy(code, match?.index ?? 0)}
-            className={`absolute top-2 right-2 p-1 rounded-md bg-zinc-700 hover:bg-zinc-600 transition-all duration-200 ${
-              isPushed === (match?.index ?? -1) ? "scale-90" : "scale-100"
-            }`}>
-            {copiedIndex === (match?.index ?? -1) ? (
-              <Check className="h-4 w-4 text-green-400" />
-            ) : (
-              <Copy className="h-4 w-4 text-zinc-300" />
-            )}
-          </button>
-        )}
+        <button
+          onClick={() => handleCopy(code, matchIndex)}
+          className={`absolute top-2 right-2 p-1 rounded-md bg-zinc-700 hover:bg-zinc-600 transition-all duration-200 ${
+            isPushed === matchIndex ? "scale-90" : "scale-100"
+          }`}>
+          {copiedIndex === matchIndex ? (
+            <Check className="h-4 w-4 text-green-400" />
+          ) : (
+            <Copy className="h-4 w-4 text-zinc-300" />
+          )}
+        </button>
       </div>
     );
-    lastIndex = match.index + match[0].length;
+    lastIndex = matchIndex + match[0].length;
   }
 
   if (lastIndex < message.content.length) {
@@ -95,11 +94,12 @@ const MessageBubble: React.FC<{ message: ChatMessage }> = ({ message }) => {
       </ReactMarkdown>
     );
   }
+
   return (
     <div
       className={`flex ${
         message.role === "user" ? "justify-end" : "justify-start"
-      } mb-4 relative`}>
+      } mb-6 relative`}>
       <div
         className={`flex ${
           message.role === "user" ? "flex-row-reverse" : "flex-row"
@@ -119,7 +119,7 @@ const MessageBubble: React.FC<{ message: ChatMessage }> = ({ message }) => {
           )}
         </div>
         <div className="bg-black bg-opacity-30 backdrop-blur-sm rounded-lg shadow-md overflow-hidden">
-          <div className="p-3">{parts}</div>
+          <div className="p-4 text-sm leading-relaxed">{parts}</div>
         </div>
       </div>
     </div>
@@ -151,7 +151,7 @@ export default function ChatbotPage() {
 
     try {
       await requestAudit(input);
-      setInput("");
+      setInput(""); // Clear the input after sending
     } catch (err) {
       console.error("Error in handleSubmit:", err);
       const errorMessage: ChatMessage = {
@@ -242,7 +242,7 @@ export default function ChatbotPage() {
         </div>
 
         {/* Chat Messages */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-4 relative z-10">
+        <div className="flex-1 overflow-y-auto p-6 space-y-6 relative z-10">
           {currentChat.map((message, index) => (
             <MessageBubble key={index} message={message} />
           ))}
@@ -258,7 +258,7 @@ export default function ChatbotPage() {
               <Textarea
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                onKeyDown={handleKeyDown} // Add this line
+                onKeyDown={handleKeyDown}
                 placeholder="Enter code to audit"
                 className="w-full bg-black bg-opacity-50 text-zinc-50 border border-zinc-800 focus:ring-2 focus:ring-[#14F195] placeholder-zinc-400 resize-none rounded-full py-3 px-6 scrollbar-thin scrollbar-thumb-zinc-700 scrollbar-track-black"
                 rows={1}

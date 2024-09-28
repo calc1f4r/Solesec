@@ -72,7 +72,7 @@ export default function Home() {
               className="h-6 w-6 text-[#14f195]">
               <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
             </svg>
-            <span className="text-xl font-bold">SOLSEC</span>
+            <span className="text-xl font-bold">SOLESEC</span>
           </ScrollLink>
           <nav className="hidden md:flex space-x-6">
             <ScrollLink
@@ -150,9 +150,9 @@ export default function Home() {
         {/* Hero Section */}
         <section
           id="home"
-          className="container mx-auto px-4 py-20 flex flex-col md:flex-row items-center">
+          className="container mx-auto px-4 py-20 flex flex-col md:flex-row items-center justify-between">
           <FadeInSection>
-            <div className="w-full md:w-2/3 mb-10 md:mb-0 flex-grow">
+            <div className="w-full md:w-1/2 mb-10 md:mb-0">
               <h1 className="text-4xl pb-2 md:text-5xl font-bold mb-12 bg-gradient-to-r from-[#14f195] to-[#9945ff] bg-clip-text text-transparent">
                 AI-Powered Solana Smart Contract Auditing
               </h1>
@@ -169,12 +169,12 @@ export default function Home() {
               </Button>
             </div>
           </FadeInSection>
-          <div className="w-full md:w-1/3 flex-shrink-0 flex justify-center">
+          <div className="w-full md:w-1/2 flex justify-center">
             <Image
               src="/images/file.png"
               alt="AI analyzing Solana smart contracts"
-              width={400} // Decreased width
-              height={300} // Decreased height
+              width={400}
+              height={300}
               className="rounded-lg shadow-lg object-cover"
             />
           </div>
@@ -188,8 +188,8 @@ export default function Home() {
               <h2 className="text-3xl font-bold mb-8 text-center text-[#14f195]">
                 About Our Automated Workflow
               </h2>
-              <div className="flex flex-col md:flex-row items-center">
-                <div className="md:w-1/2 mb-10 md:mb-0">
+              <div className="flex flex-col md:flex-row items-center justify-between">
+                <div className="md:w-1/2 md:pr-10">
                   <p className="text-gray-300 mb-4">
                     At solsec.xyz, we've revolutionized the smart contract
                     auditing process with our fully automated AI-powered system.
@@ -204,9 +204,9 @@ export default function Home() {
                     all without human intervention.
                   </p>
                 </div>
-                <div className="md:w-1/2 md:pl-10">
+                <div className="md:w-1/2 flex justify-end mt-10 md:mt-0">
                   <Image
-                    src="https://images.unsplash.com/photo-1639803938107-1e5a67d959d4?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1632&q=80"
+                    src="/images/solana-banner.png"
                     alt="AI and Blockchain Intersection"
                     width={500}
                     height={300}
