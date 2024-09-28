@@ -325,7 +325,11 @@ export default function ChatbotPage() {
         setHistory((prev) => {
           const newEntry: AuditEntry = {
             id: Date.now().toString(),
-            messages: [...prev[0]?.messages || [], newMessage, assistantMessage],
+            messages: [
+              ...(prev[0]?.messages || []),
+              newMessage,
+              assistantMessage,
+            ],
             timestamp: new Date(),
           };
           return [newEntry, ...prev];
