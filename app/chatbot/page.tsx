@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, ChangeEvent } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -13,6 +13,7 @@ import {
   Bot,
   Copy,
   Check,
+  Upload,
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import Image from "next/image";
@@ -20,10 +21,12 @@ import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
 import { useAuditRequest } from "../hooks/useAuditRequest";
 import { motion } from "framer-motion";
+import { ComponentPropsWithoutRef } from "react";
 
 interface ChatMessage {
   role: "user" | "assistant";
   content: string;
+  displayContent?: React.ReactNode;
 }
 
 interface AuditEntry {
@@ -35,10 +38,6 @@ interface AuditEntry {
 const MessageBubble: React.FC<{ message: ChatMessage }> = ({ message }) => {
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
   const [isPushed, setIsPushed] = useState<number | null>(null);
-  const codeRegex = /```rust\n([\s\S]*?)```/g;
-  const parts = [];
-  let lastIndex = 0;
-  let match: RegExpExecArray | null;
 
   const handleCopy = (code: string, index: number) => {
     navigator.clipboard.writeText(code);
@@ -50,61 +49,116 @@ const MessageBubble: React.FC<{ message: ChatMessage }> = ({ message }) => {
     }, 500);
   };
 
-  while ((match = codeRegex.exec(message.content)) !== null) {
-    if (match.index > lastIndex) {
-      parts.push(
-        <ReactMarkdown
-          key={lastIndex}
-          className="prose prose-invert prose-sm max-w-none text-zinc-300">
-          {message.content.slice(lastIndex, match.index)}
-        </ReactMarkdown>
-      );
-    }
-    const code = match[1].trim();
-    const matchIndex = match.index;
-    parts.push(
-      <div key={matchIndex} className="relative">
-        <SyntaxHighlighter
-          language="rust"
-          style={vscDarkPlus}
-          className="rounded-md my-2 pr-10">
-          {code}
-        </SyntaxHighlighter>
-        <button
-          onClick={() => handleCopy(code, matchIndex)}
-          className={`absolute top-2 right-2 p-1 rounded-md bg-zinc-700 hover:bg-zinc-600 transition-all duration-200 ${
-            isPushed === matchIndex ? "scale-90" : "scale-100"
-          }`}>
-          {copiedIndex === matchIndex ? (
-            <Check className="h-4 w-4 text-green-400" />
-          ) : (
-            <Copy className="h-4 w-4 text-zinc-300" />
-          )}
-        </button>
-      </div>
-    );
-    lastIndex = matchIndex + match[0].length;
-  }
-
-  if (lastIndex < message.content.length) {
-    parts.push(
-      <ReactMarkdown
-        key={lastIndex}
-        className="prose prose-invert prose-sm max-w-none text-zinc-300">
-        {message.content.slice(lastIndex)}
-      </ReactMarkdown>
-    );
-  }
+  const renderContent = (content: string) => {
+    const parts = content.split(/```([\s\S]*?)```/);
+    return parts.map((part, index) => {
+      if (index % 2 === 1) {
+        // This is a code block
+        const [language, ...codeLines] = part.split("\n");
+        const code = codeLines.join("\n").trim();
+        return (
+          <div key={index} className="relative w-full my-4">
+            <SyntaxHighlighter
+              language={language || "text"}
+              style={vscDarkPlus}
+              className="rounded-md !my-0 !bg-zinc-800"
+              customStyle={{
+                padding: "1rem",
+                fontSize: "0.875rem",
+                lineHeight: "1.5",
+              }}>
+              {code}
+            </SyntaxHighlighter>
+            <button
+              onClick={() => handleCopy(code, index)}
+              className={`absolute top-2 right-2 p-1 rounded-md bg-zinc-700 hover:bg-zinc-600 transition-all duration-200 ${
+                isPushed === index ? "scale-90" : "scale-100"
+              }`}>
+              {copiedIndex === index ? (
+                <Check className="h-4 w-4 text-green-400" />
+              ) : (
+                <Copy className="h-4 w-4 text-zinc-300" />
+              )}
+            </button>
+          </div>
+        );
+      } else {
+        // This is regular text
+        return (
+          <ReactMarkdown
+            key={index}
+            className="prose prose-invert prose-sm max-w-none text-zinc-300 leading-relaxed"
+            components={{
+              p: ({ node, ...props }) => (
+                <p className="mb-4 last:mb-0" {...props} />
+              ),
+              h1: ({ node, ...props }) => (
+                <h1
+                  className="text-2xl font-bold mb-4 mt-6 text-zinc-100"
+                  {...props}
+                />
+              ),
+              h2: ({ node, ...props }) => (
+                <h2
+                  className="text-xl font-bold mb-3 mt-5 text-zinc-200"
+                  {...props}
+                />
+              ),
+              h3: ({ node, ...props }) => (
+                <h3
+                  className="text-lg font-bold mb-2 mt-4 text-zinc-200"
+                  {...props}
+                />
+              ),
+              ul: ({ node, ...props }) => (
+                <ul
+                  className="list-disc list-inside mb-4 space-y-2"
+                  {...props}
+                />
+              ),
+              ol: ({ node, ...props }) => (
+                <ol
+                  className="list-decimal list-inside mb-4 space-y-2"
+                  {...props}
+                />
+              ),
+              li: ({ node, ...props }) => <li className="mb-1" {...props} />,
+              blockquote: ({ node, ...props }) => (
+                <blockquote
+                  className="border-l-4 border-[#14F195] pl-4 italic my-4 text-zinc-400"
+                  {...props}
+                />
+              ),
+              code: ({
+                inline,
+                className,
+                ...props
+              }: ComponentPropsWithoutRef<"code"> & { inline?: boolean }) =>
+                inline ? (
+                  <code
+                    className={`bg-zinc-800 rounded px-1 py-0.5 text-sm text-zinc-200 ${className}`}
+                    {...props}
+                  />
+                ) : (
+                  <code {...props} />
+                ),
+            }}>
+            {part}
+          </ReactMarkdown>
+        );
+      }
+    });
+  };
 
   return (
     <div
       className={`flex ${
         message.role === "user" ? "justify-end" : "justify-start"
-      } mb-6 relative`}>
+      } mb-6`}>
       <div
         className={`flex ${
           message.role === "user" ? "flex-row-reverse" : "flex-row"
-        } items-start max-w-[80%]`}>
+        } items-start max-w-[85%] space-x-2`}>
         <div
           className={`flex-shrink-0 ${
             message.role === "user" ? "ml-2" : "mr-2"
@@ -120,8 +174,10 @@ const MessageBubble: React.FC<{ message: ChatMessage }> = ({ message }) => {
           )}
         </div>
         <div className="bg-black bg-opacity-30 backdrop-blur-sm rounded-lg shadow-md overflow-hidden">
-          <div className="p-6 text-sm leading-relaxed flex items-center justify-center min-h-[60px]">
-            {parts}
+          <div className="p-4 text-sm">
+            {typeof message.displayContent === "string"
+              ? renderContent(message.displayContent)
+              : message.displayContent}
           </div>
         </div>
       </div>
@@ -157,6 +213,22 @@ const TypingAnimation: React.FC = () => {
   );
 };
 
+// Add this new component
+const FileIndicator: React.FC<{ fileName: string }> = ({ fileName }) => (
+  <div className="bg-[#14F195] bg-opacity-20 text-[#14F195] rounded-md px-2 py-1 text-xs flex items-center space-x-1 mb-2">
+    <Upload className="h-3 w-3" />
+    <span className="font-medium">[File: {fileName}]</span>
+  </div>
+);
+
+// Add this new component for the input file indicator
+const InputFileIndicator: React.FC<{ fileName: string }> = ({ fileName }) => (
+  <div className="absolute left-3 top-1/2 transform -translate-y-1/2 bg-[#14F195] bg-opacity-20 text-[#14F195] rounded-full px-2 py-0.5 text-xs flex items-center space-x-1">
+    <Upload className="h-3 w-3" />
+    <span className="font-medium truncate max-w-[150px]">{fileName}</span>
+  </div>
+);
+
 export default function ChatbotPage() {
   const [input, setInput] = useState("");
   const [currentChat, setCurrentChat] = useState<ChatMessage[]>([]);
@@ -165,6 +237,9 @@ export default function ChatbotPage() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { result, isLoading, error, requestAudit } = useAuditRequest();
   const [isTyping, setIsTyping] = useState(false);
+  const [uploadedFile, setUploadedFile] = useState<string | null>(null);
+  const [uploadedFileName, setUploadedFileName] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -172,22 +247,68 @@ export default function ChatbotPage() {
 
   useEffect(scrollToBottom, [currentChat]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const examplePrompts = [
+    "Explain Solana's architecture",
+    "How to optimize Solana smart contracts?",
+    "What are Solana's advantages?",
+    "Solana vs Ethereum comparison",
+  ];
+
+  const handleExamplePrompt = async (prompt: string) => {
+    setInput(prompt);
+    await handleSubmit(
+      new Event("submit") as unknown as React.FormEvent,
+      prompt
+    );
+  };
+
+  const handleFileUpload = (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      setUploadedFileName(file.name);
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const content = e.target?.result as string;
+        setUploadedFile(content);
+      };
+      reader.readAsText(file);
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent, overrideInput?: string) => {
     e.preventDefault();
-    if (!input.trim()) return;
+    const submittedInput = overrideInput || input;
+    if (!submittedInput.trim() && !uploadedFile) return;
 
-    console.log("Submitting input:", input);
+    let messageContent = submittedInput;
+    let displayContent = (
+      <>
+        {uploadedFileName && <FileIndicator fileName={uploadedFileName} />}
+        <div>{submittedInput}</div>
+      </>
+    );
 
-    const newMessage: ChatMessage = { role: "user", content: input };
+    if (uploadedFile) {
+      messageContent += `\n\n\`\`\`rust\n${uploadedFile}\n\`\`\``;
+    }
+
+    const newMessage: ChatMessage = {
+      role: "user",
+      content: messageContent,
+      displayContent: displayContent,
+    };
     setCurrentChat((prev) => [...prev, newMessage]);
     setIsTyping(true);
 
-    // Clear the input immediately after sending
     setInput("");
+    setUploadedFile(null);
+    setUploadedFileName(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
 
     try {
-      await requestAudit(input);
-      // Note: We've removed the setInput("") from here since we're clearing it earlier
+      await requestAudit(messageContent);
     } catch (err) {
       console.error("Error in handleSubmit:", err);
       const errorMessage: ChatMessage = {
@@ -289,21 +410,58 @@ export default function ChatbotPage() {
           <div ref={messagesEndRef} />
         </div>
 
+        {/* Example Prompts */}
+        {currentChat.length === 0 && (
+          <div className="px-4 py-2 bg-zinc-950 border-t border-zinc-800">
+            <div className="flex justify-center space-x-2 mb-2">
+              {examplePrompts.map((prompt, index) => (
+                <Button
+                  key={index}
+                  onClick={() => handleExamplePrompt(prompt)}
+                  className="bg-black text-white text-xs font-medium rounded-full px-3 py-1 transition-all duration-300 shadow-md hover:shadow-lg border border-[#14F195] hover:border-[#9945FF]">
+                  {prompt}
+                </Button>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Input Area */}
         <div className="p-4 bg-zinc-950 border-t border-zinc-800">
           <form
             onSubmit={handleSubmit}
             className="mx-auto w-3/5 flex items-center space-x-2">
             <div className="flex-1 relative">
+              {uploadedFileName && (
+                <InputFileIndicator fileName={uploadedFileName} />
+              )}
               <Textarea
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
-                placeholder="Ask me anything about the solana 🚀"
-                className="w-full  bg-black bg-opacity-50 text-zinc-50 border border-zinc-800 focus:ring-2 focus:ring-[#14F195] placeholder-zinc-400 resize-none rounded-full py-5 pb-4 pt-4 scrollbar-thin scrollbar-thumb-zinc-700 scrollbar-track-black"
+                placeholder={
+                  uploadedFileName ? "" : "Ask me anything about the solana 🚀"
+                }
+                className={`w-full bg-black bg-opacity-50 text-zinc-50 border border-zinc-800 focus:ring-2 focus:ring-[#14F195] placeholder-zinc-400 resize-none rounded-full py-5 pb-4 pt-4 scrollbar-thin scrollbar-thumb-zinc-700 scrollbar-track-black ${
+                  uploadedFileName ? "pl-28" : "pl-4"
+                } pr-12`}
                 rows={1}
               />
             </div>
+            <input
+              type="file"
+              accept=".rs"
+              onChange={handleFileUpload}
+              ref={fileInputRef}
+              className="hidden"
+            />
+            <Button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              className="bg-black text-white font-medium rounded-full transition-all duration-300 flex items-center justify-center h-12 w-12 shadow-md hover:shadow-lg border-2 border-[#14F195] hover:border-[#9945FF]">
+              <Upload className="h-6 w-6" />
+              <span className="sr-only">Upload Rust File</span>
+            </Button>
             <Button
               type="submit"
               disabled={isLoading}
