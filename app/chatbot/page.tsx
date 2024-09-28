@@ -19,6 +19,7 @@ import Image from "next/image";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
 import { useAuditRequest } from "../hooks/useAuditRequest";
+import { motion } from "framer-motion";
 
 interface ChatMessage {
   role: "user" | "assistant";
@@ -119,8 +120,38 @@ const MessageBubble: React.FC<{ message: ChatMessage }> = ({ message }) => {
           )}
         </div>
         <div className="bg-black bg-opacity-30 backdrop-blur-sm rounded-lg shadow-md overflow-hidden">
-          <div className="p-4 text-sm leading-relaxed">{parts}</div>
+          <div className="p-6 text-sm leading-relaxed flex items-center justify-center min-h-[60px]">
+            {parts}
+          </div>
         </div>
+      </div>
+    </div>
+  );
+};
+
+const TypingAnimation: React.FC = () => {
+  return (
+    <div className="flex items-center space-x-2 bg-black bg-opacity-30 backdrop-blur-sm rounded-lg p-4 max-w-[80%]">
+      <div className="bg-black bg-opacity-30 backdrop-blur-sm rounded-full p-2 shadow-lg">
+        <Bot className="h-5 w-5 text-[#9945FF]" />
+      </div>
+      <div className="flex space-x-1">
+        {[0, 1, 2].map((index) => (
+          <motion.div
+            key={index}
+            className="w-2 h-2 bg-[#9945FF] rounded-full"
+            animate={{
+              y: ["0%", "-50%", "0%"],
+            }}
+            transition={{
+              duration: 0.6,
+              repeat: Infinity,
+              repeatType: "reverse",
+              ease: "easeInOut",
+              delay: index * 0.1,
+            }}
+          />
+        ))}
       </div>
     </div>
   );
@@ -133,6 +164,7 @@ export default function ChatbotPage() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { result, isLoading, error, requestAudit } = useAuditRequest();
+  const [isTyping, setIsTyping] = useState(false);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -148,10 +180,14 @@ export default function ChatbotPage() {
 
     const newMessage: ChatMessage = { role: "user", content: input };
     setCurrentChat((prev) => [...prev, newMessage]);
+    setIsTyping(true);
+
+    // Clear the input immediately after sending
+    setInput("");
 
     try {
       await requestAudit(input);
-      setInput(""); // Clear the input after sending
+      // Note: We've removed the setInput("") from here since we're clearing it earlier
     } catch (err) {
       console.error("Error in handleSubmit:", err);
       const errorMessage: ChatMessage = {
@@ -159,11 +195,14 @@ export default function ChatbotPage() {
         content: "An error occurred while processing your request.",
       };
       setCurrentChat((prev) => [...prev, errorMessage]);
+    } finally {
+      setIsTyping(false);
     }
   };
 
   useEffect(() => {
     if (result) {
+      setIsTyping(false);
       const assistantMessage: ChatMessage = {
         role: "assistant",
         content: result.message,
@@ -246,6 +285,7 @@ export default function ChatbotPage() {
           {currentChat.map((message, index) => (
             <MessageBubble key={index} message={message} />
           ))}
+          {isTyping && <TypingAnimation />}
           <div ref={messagesEndRef} />
         </div>
 
@@ -259,8 +299,8 @@ export default function ChatbotPage() {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
-                placeholder="Enter code to audit"
-                className="w-full bg-black bg-opacity-50 text-zinc-50 border border-zinc-800 focus:ring-2 focus:ring-[#14F195] placeholder-zinc-400 resize-none rounded-full py-3 px-6 scrollbar-thin scrollbar-thumb-zinc-700 scrollbar-track-black"
+                placeholder="Ask me anything about the solana 🚀"
+                className="w-full  bg-black bg-opacity-50 text-zinc-50 border border-zinc-800 focus:ring-2 focus:ring-[#14F195] placeholder-zinc-400 resize-none rounded-full py-5 pb-4 pt-4 scrollbar-thin scrollbar-thumb-zinc-700 scrollbar-track-black"
                 rows={1}
               />
             </div>
